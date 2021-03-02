@@ -1,10 +1,11 @@
-// Quiz on implementing simple RANSAC line fitting
+// Implementing simple RANSAC 3d
 
 #include "../../render/render.h"
 #include <unordered_set>
 #include "../../processPointClouds.h"
 // using templates for processPointClouds so also include .cpp to help linker
 #include "../../processPointClouds.cpp"
+#include <Eigen/Geometry>
 
 pcl::PointCloud<pcl::PointXYZ>::Ptr CreateData()
 {
@@ -64,30 +65,40 @@ std::unordered_set<int> Ransac(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, int ma
 {
 	std::unordered_set<int> inliersResult;
 	srand(time(NULL));
-	
-	// TODO: Fill in this function
 
 for (int i = 0; maxIterations > i; i++) 
     {
-		// Randomly sample subset and fit line
+		// randomly pick two points
 		std::unordered_set<int> inliers;
 		while (inliers.size() < 2)
 		{
 			inliers.insert(rand()%(cloud->points.size()));
 		}
 
-		float x1, x2, y1, y2;
+		float x1, x2, x3, y1, y2, y3, z1, z2, z3;
 
 		auto itr = inliers.begin(); //returns pointer to beginning of object
 		x1 = cloud->points[*itr].x;
 		y1 = cloud->points[*itr].y;
+		z1 = cloud->points[*itr].z;
 		itr++;
 		x2 = cloud->points[*itr].x;
 		y2 = cloud->points[*itr].y;
+		z2 = cloud->points[*itr].z;
+		itr++;
+        x3 = cloud->points[*itr].x;
+		y3 = cloud->points[*itr].y;
+		z3 = cloud->points[*itr].z;
 		
-		float a = y1 - y2;
-		float b = x2 - x1;
-		float c = x1 * y2 - x2 * y1;
+        // for 3d ransac we need 
+        Vector3d v1(x2 - x1, y2 - y1, z2 - z1);
+        Vector3d v2(x3 - x1, y3 - y1, z3 - z1);
+        Vector3d ijk = v1.cross(v2);
+
+        float a = ijk[0];
+		float b = ijk[1];
+		float c = ijk[2];
+        float d = -(a*x1 + b*y1 + c*z1);
 
 		// Randomly sample subset and fit line
 
@@ -100,30 +111,25 @@ for (int i = 0; maxIterations > i; i++)
 			}
 
 			pcl::PointXYZ point = cloud->points[p];
-			float x3 = point.x;
-			float y3 = point.y;
+			float x4 = point.x;
+			float y4 = point.y;
+			float z4 = point.z;
 
-			// Measure distance between every point and fitted line
-			float d = fabs(a*x3 + b*y3 + c)/sqrt(a*a + b*b);
+			float dis4 = fabs(a*x4 + b*y4 + c*z4 + d)/sqrt(a*a + b*b + c*c);
 
-			// if it is the best result update inliersResult.
-			if (d <= distanceTol)
+			if (dis4 <= distanceTol)
 			{
-				inliers.insert(p);
+				inliers.insert(p)
 			}
 		}
 		
-		// if it is the best result update inliersResult.	
+		// if it is the best result update inliersResult.
 		if (inliers.size() > inliersResult.size())
 		{
 			inliersResult = inliers;
 		}
-
-	}
-	
-	// Return indicies of inliers from fitted line with most inliers
+    }
 	return inliersResult;
-
 }
 
 int main ()
@@ -137,7 +143,7 @@ int main ()
 	
 
 	// TODO: Change the max iteration and distance tolerance arguments for Ransac function
-	std::unordered_set<int> inliers = Ransac(cloud, 10, 1.0);
+	std::unordered_set<int> inliers = Ransac(cloud, 0, 0);
 
 	pcl::PointCloud<pcl::PointXYZ>::Ptr  cloudInliers(new pcl::PointCloud<pcl::PointXYZ>());
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloudOutliers(new pcl::PointCloud<pcl::PointXYZ>());
