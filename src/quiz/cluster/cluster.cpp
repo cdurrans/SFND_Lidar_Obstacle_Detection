@@ -75,7 +75,7 @@ void render2DTree(Node* node, pcl::visualization::PCLVisualizer::Ptr& viewer, Bo
 
 }
 
-void promixity(int indice, const std::vector<std::vector<float>>& points, std::vector<int>& cluster, std::vector<bool>& processed, KdTree * tree, float distanceTol )
+void proximity(int indice, const std::vector<std::vector<float>>& points, std::vector<int>& cluster, std::vector<bool>& processed, KdTree* tree, float distanceTol )
 {
 	
 	processed[indice] = true;
@@ -87,7 +87,7 @@ void promixity(int indice, const std::vector<std::vector<float>>& points, std::v
 	{
 		if(!processed[id])
 		{
-			promixity(id, points, cluster, processed, tree, distanceTol);
+			proximity(id, points, cluster, processed, tree, distanceTol);
 		}
 	}
 }
@@ -113,7 +113,7 @@ std::vector<std::vector<int>> euclideanCluster(const std::vector<std::vector<flo
 		}
 
 		std::vector<int> cluster;
-		promixity(i, points, cluster, processed, tree, distanceTol);
+		proximity(i, points, cluster, processed, tree, distanceTol);
 		clusters.push_back(cluster);
 
 	}
