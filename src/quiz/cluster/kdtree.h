@@ -35,7 +35,7 @@ struct KdTree
 		}
 		else 
 		{
-			uint cd = depth % 2;
+			uint cd = depth % point.size();
 			if(point[cd] < ((*node)->point[cd]))
 			{
 				insertHelper(&((*node)->left), depth+1, point, id);
@@ -57,29 +57,53 @@ struct KdTree
 
 	} 
 
-	void searchHelper(std::vector<float> target, Node* node, int depth, float distanceTol, std::vector<int>& ids)
+	void searchHelper(std::vector<float> target, Node* node, int depth, float distanceTol, std::vector<int> &ids)
 	{
 		if (node!=NULL)
 		{
-			if ( (node->point[0]>=(target[0] - distanceTol) && node->point[0]<=(target[0] + distanceTol)) && (node->point[1]>=(target[1] - distanceTol) && node->point[1]<=(target[1] + distanceTol))  )
+			std::vector<float> deltas;
+
+			for (int i = 0; i < node->point.size(); i++)
 			{
-				float distance = sqrt((node->point[0]-target[0]) * (node->point[0]-target[0]) + (node->point[1]-target[1]) * (node->point[1]-target[1]));
+				deltas.push_back(node->point[i] - target[i]);
+			}
+
+			bool distanceDeltaOk = true;
+
+			for(float d : deltas)
+			{
+				if (fabs(d) >= distanceTol)
+				{
+					distanceDeltaOk = false;
+					break;
+				}
+			}
+
+			if (distanceDeltaOk) 
+			{
+				float distance = 0.0f;
+				for (float d : deltas)
+				{
+					distance = distance + (d * d);
+				}
+				distance = sqrt(distance);
+
 				if (distance <= distanceTol)
 				{
 					ids.push_back(node->id);
 				}
-
-				if ((target[depth%2] - distanceTol) < node->point[depth%2])
-				{
-					searchHelper(target, node->left, depth+1, distanceTol, ids);
-				}
-				if ((target[depth%2] + distanceTol) > node->point[depth%2])
-				{
-					searchHelper(target, node->right, depth+1, distanceTol, ids);
-				}
-
 			}
-		
+			
+			int currentIndx = depth % node->point.size();
+
+			if ((target[currentIndx] - distanceTol) < node->point[currentIndx])
+			{
+				searchHelper(target, node->left, depth+1, distanceTol, ids);
+			}
+			if ((target[currentIndx] + distanceTol) > node->point[currentIndx])
+			{
+				searchHelper(target, node->right, depth+1, distanceTol, ids);
+			}
 		}
 	}
 
@@ -87,10 +111,13 @@ struct KdTree
 	std::vector<int> search(std::vector<float> target, float distanceTol)
 	{
 		std::vector<int> ids;
-		searchHelper(target, root, 0, distanceTol, ids);
-		
+		searchHelper(target,root,0,distanceTol,ids);
 		return ids;
 	}
 	
 
 };
+
+
+
+
