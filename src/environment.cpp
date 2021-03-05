@@ -46,9 +46,21 @@ void simpleHighway(pcl::visualization::PCLVisualizer::Ptr& viewer)
     std::vector<Car> cars = initHighway(renderScene, viewer);
     
     // TODO:: Create lidar sensor 
+    Lidar* lidar = new Lidar(cars, 0);
+    pcl::PointCloud<pcl::PointXYZ>::Ptr inputCloud = lidar->scan();
+    //renderRays(viewer, lidar->position, inputCloud);
+
+    renderPointCloud(viewer, inputCloud, "Ego");
 
     // TODO:: Create point processor
   
+}
+
+void cityBlock(pcl::visualization::PCLVisualizer::Ptr& viewer, ProcessPointClouds<pcl::PointXYZI>* pointProcessorI, pcl::PointCloud<pcl::PointXYZI>::Ptr inputCloud) 
+{
+    inputCloud = pointProcessorI->FilterCloud(inputCloud, .2, Eigen::Vector4f (-13, -6, -3, 1), Eigen::Vector4f (22.5, 6, 3, 1));
+    //inputCloud = pointProcessorI->FilterCloud(inputCloud, .2, Eigen::Vector4f (-13, -6, -3, 1), Eigen::Vector4f (22.5, 6, 3, 1));
+    renderPointCloud(viewer, inputCloud, "inputCloud");
 }
 
 
@@ -83,10 +95,31 @@ int main (int argc, char** argv)
     pcl::visualization::PCLVisualizer::Ptr viewer (new pcl::visualization::PCLVisualizer ("3D Viewer"));
     CameraAngle setAngle = XY;
     initCamera(setAngle, viewer);
-    simpleHighway(viewer);
 
-    while (!viewer->wasStopped ())
+    //streaming portion
+    ProcessPointClouds<pcl::PointXYZI>* pointProcessorI = new ProcessPointClouds<pcl::PointXYZI>();
+    std::vector<boost::filesystem::path> stream = pointProcessorI->streamPcd("../src/sensors/data/pcd/data_1");
+    auto streamIterator = stream.begin();
+    pcl::PointCloud<pcl::PointXYZI>::Ptr inputCloudI;
+    //end streaming
+
+    while (!viewer->wasStopped())
     {
-        viewer->spinOnce ();
+        viewer->removeAllPointClouds();
+        viewer->removeAllShapes();
+
+        // Load pcd and run obstacle detection process
+        inputCloudI = pointProcessorI->loadPcd((*streamIterator).string());
+        cityBlock(viewer, pointProcessorI, inputCloudI);
+
+        streamIterator++;
+        if(streamIterator == stream.end())
+        {
+            streamIterator = stream.begin();
+        }
+        viewer->spinOnce();
     } 
 }
+
+
+ 

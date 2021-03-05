@@ -115,6 +115,7 @@ std::vector<std::vector<int>> euclideanCluster(const std::vector<std::vector<flo
 		std::vector<int> cluster;
 		proximity(i, points, cluster, processed, tree, distanceTol);
 		clusters.push_back(cluster);
+		i++;
 
 	}
 

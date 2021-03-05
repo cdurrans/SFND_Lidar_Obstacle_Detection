@@ -19,6 +19,12 @@
 #include <chrono>
 #include "render/box.h"
 
+#include <unordered_set>
+#include <random>
+#include "./quiz/cluster/kdtree.h"
+#include <Eigen/Geometry>
+
+
 template<typename PointT>
 class ProcessPointClouds {
 public:
@@ -35,6 +41,10 @@ public:
     std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT>::Ptr> SeparateClouds(pcl::PointIndices::Ptr inliers, typename pcl::PointCloud<PointT>::Ptr cloud);
 
     std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT>::Ptr> SegmentPlane(typename pcl::PointCloud<PointT>::Ptr cloud, int maxIterations, float distanceThreshold);
+	
+    std::unordered_set<int> Ransac3d(const typename pcl::PointCloud<PointT>::Ptr& cloud, int maxIterations, float distanceTol);
+
+	void proximity(int indice, typename pcl::PointCloud<PointT>::Ptr cloud, std::vector<bool>& processed, KdTree* tree, float distanceTol);
 
     std::vector<typename pcl::PointCloud<PointT>::Ptr> Clustering(typename pcl::PointCloud<PointT>::Ptr cloud, float clusterTolerance, int minSize, int maxSize);
 
