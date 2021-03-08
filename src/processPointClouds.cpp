@@ -90,7 +90,6 @@ std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT
   return segResult;
 }
 
-//continue here!!
 template<typename PointT>
 std::unordered_set<int> ProcessPointClouds<PointT>::Ransac3d(const typename pcl::PointCloud<PointT>::Ptr& cloud, int maxIterations, float distanceTol)
 {
@@ -141,7 +140,7 @@ std::unordered_set<int> ProcessPointClouds<PointT>::Ransac3d(const typename pcl:
 				continue;
 			}
 
-			pcl::PointXYZ point = cloud->points[p];
+			pcl::PointXYZI point = cloud->points[p];
 			float x4 = point.x;
 			float y4 = point.y;
 			float z4 = point.z;
@@ -197,15 +196,15 @@ template<typename PointT>
 void ProcessPointClouds<PointT>::proximity(int indice, typename pcl::PointCloud<PointT>::Ptr cloud, std::vector<bool>& processed, KdTree* tree, float distanceTol)
 {
     processed[indice] = true;
-    cloud.points.push_back(indice);
+    cloud->points.push_back(indice);
 
-    std::vector<int> nearest = tree->search(cloud.points[indice], distanceTol);
+    std::vector<int> nearest = tree->search(cloud->points[indice], distanceTol);
 
     for(int id : nearest)
     {
         if(!processed[id])
         {
-            proximity(id, cloud, cloud, processed, tree, distanceTol);
+            proximity(id, cloud, processed, tree, distanceTol);
         }
     }
 }
@@ -218,19 +217,19 @@ std::vector<typename pcl::PointCloud<PointT>::Ptr> ProcessPointClouds<PointT>::C
     auto startTime = std::chrono::steady_clock::now();
 
     std::vector<typename pcl::PointCloud<PointT>::Ptr> clusters;
-    std::vector<bool> processed(cloud.points.size(), false);
+    std::vector<bool> processed(cloud->points.size(), false);
     // TODO:: Fill in the function to perform euclidean clustering to group detected obstacles
     
     KdTree* tree = new KdTree;
 
-    for (int i = 0; i < cloud.points.size(); i++)
+    for (int i = 0; i < cloud->points.size(); i++)
     {
-        tree->insert(cloud.points[i], i);
+        tree->insert(cloud->points[i], i);
     }
     
     int i = 0;
 
-    while (i < cloud.points.size())
+    while (i < cloud->points.size())
     {
         if (processed[i])
         {
@@ -239,10 +238,9 @@ std::vector<typename pcl::PointCloud<PointT>::Ptr> ProcessPointClouds<PointT>::C
         }
 
         typename pcl::PointCloud<PointT>::Ptr cluster;
-        proximity(i, cloud, cluster, processed, tree, clusterTolerance);
+        proximity(i, cloud, processed, tree, clusterTolerance);
         clusters.push_back(cluster);
     }
-
 
     auto endTime = std::chrono::steady_clock::now();
     auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
