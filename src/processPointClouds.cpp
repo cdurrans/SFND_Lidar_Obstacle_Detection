@@ -1,7 +1,7 @@
 // PCL lib Functions for processing point clouds 
 
 #include "processPointClouds.h"
-
+#include <iostream>
 //constructor:
 template<typename PointT>
 ProcessPointClouds<PointT>::ProcessPointClouds() {}
@@ -193,18 +193,17 @@ std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT
 }
 
 template<typename PointT>
-void ProcessPointClouds<PointT>::proximity(int indice, typename pcl::PointCloud<PointT>::Ptr cloud, std::vector<bool>& processed, KdTree* tree, float distanceTol)
+void ProcessPointClouds<PointT>::proximity(int indice, typename pcl::PointCloud<PointT>::Ptr cloud, typename pcl::PointCloud<PointT>::Ptr cluster, std::vector<bool>& processed, KdTree* tree, float distanceTol)
 {
     processed[indice] = true;
-    cloud->points.push_back(indice);
-
+    cluster->points.push_back(cloud->points[indice]);
     std::vector<int> nearest = tree->search(cloud->points[indice], distanceTol);
 
     for(int id : nearest)
     {
         if(!processed[id])
         {
-            proximity(id, cloud, processed, tree, distanceTol);
+            proximity(id, cloud, cluster, processed, tree, distanceTol);
         }
     }
 }
@@ -221,14 +220,12 @@ std::vector<typename pcl::PointCloud<PointT>::Ptr> ProcessPointClouds<PointT>::C
     // TODO:: Fill in the function to perform euclidean clustering to group detected obstacles
     
     KdTree* tree = new KdTree;
-
     for (int i = 0; i < cloud->points.size(); i++)
     {
         tree->insert(cloud->points[i], i);
     }
-    
-    int i = 0;
 
+  	int i = 0;
     while (i < cloud->points.size())
     {
         if (processed[i])
@@ -237,15 +234,15 @@ std::vector<typename pcl::PointCloud<PointT>::Ptr> ProcessPointClouds<PointT>::C
             continue;
         }
 
-        typename pcl::PointCloud<PointT>::Ptr cluster;
-        proximity(i, cloud, processed, tree, clusterTolerance);
+        typename pcl::PointCloud<PointT>::Ptr cluster {new pcl::PointCloud<PointT>};
+      	proximity(i, cloud, cluster, processed, tree, clusterTolerance);
         clusters.push_back(cluster);
     }
 
     auto endTime = std::chrono::steady_clock::now();
     auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
     std::cout << "clustering took " << elapsedTime.count() << " milliseconds and found " << clusters.size() << " clusters" << std::endl;
-
+	
     return clusters;
 }
 

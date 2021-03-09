@@ -41,6 +41,7 @@ struct KdTree
           	bool left = false;
           	if (cd == 0)
             {
+              	depth = 3;
               	//std::cout << "It made it to " << cd << std::endl;
             	if(point.x < ((*node)->point.x))
                 {
@@ -121,6 +122,7 @@ struct KdTree
           	bool left = false;
           	if (cd == 0)
             {
+              	depth = 3;
                 if ((target.x - distanceTol) < node->point.x)
                 {
                     searchHelper(target, node->left, depth+1, distanceTol, ids);

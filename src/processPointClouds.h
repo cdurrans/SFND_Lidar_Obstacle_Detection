@@ -21,7 +21,7 @@
 
 #include <unordered_set>
 #include <random>
-#include "./quiz/cluster/kdtree.h"
+#include "kdtreePCLl.h"
 #include <Eigen/Geometry>
 
 
@@ -45,6 +45,7 @@ public:
     std::unordered_set<int> Ransac3d(const typename pcl::PointCloud<PointT>::Ptr& cloud, int maxIterations, float distanceTol);
 
 	void proximity(int indice, typename pcl::PointCloud<PointT>::Ptr cloud, std::vector<bool>& processed, KdTree* tree, float distanceTol);
+    void proximity(int indice, typename pcl::PointCloud<PointT>::Ptr cloud, typename pcl::PointCloud<PointT>::Ptr cluster, std::vector<bool>& processed, KdTree* tree, float distanceTol);
 
     std::vector<typename pcl::PointCloud<PointT>::Ptr> Clustering(typename pcl::PointCloud<PointT>::Ptr cloud, float clusterTolerance, int minSize, int maxSize);
 
