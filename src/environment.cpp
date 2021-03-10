@@ -62,7 +62,7 @@ void cityBlock(pcl::visualization::PCLVisualizer::Ptr& viewer, ProcessPointCloud
     inputCloud = pointProcessorI->FilterCloud(inputCloud, .3, Eigen::Vector4f (-10, -5, -3, 1), Eigen::Vector4f (22.5, 6, 3, 1));
   	std::pair<pcl::PointCloud<pcl::PointXYZI>::Ptr, pcl::PointCloud<pcl::PointXYZI>::Ptr> segResult = pointProcessorI->SegmentPlane(inputCloud, 80, .2);
   	renderPointCloud(viewer, segResult.first, "planeCloud", Color(0,1,0));
-  	std::vector<typename pcl::PointCloud<pcl::PointXYZI>::Ptr> clusters = pointProcessorI->Clustering(segResult.second, 1.0, 30, 300);
+  	std::vector<typename pcl::PointCloud<pcl::PointXYZI>::Ptr> clusters = pointProcessorI->Clustering(segResult.second, 0.5, 30, 250);
     int clusterNumber = 0;
   	
   	std::cout << "Cluster size: " << clusters.size() << std::endl;
