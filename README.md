@@ -2,7 +2,7 @@
 
 <img src="media/ObstacleDetectionFPS.gif" width="700" height="400" />
 
-This repo contains the environment I used to learn about ransac, euclidean clustering, etc. while working with real LIDAR data. It was created by Udacity and the instructor Aaron Brown and can be found here https://github.com/udacity/SFND_Lidar_Obstacle_Detection.git. My contributions were to the cityBlock function within environment.cpp as well as most of the content in the other 3 files within the src/ folder.
+This repo contains the environment I used to learn about RANSAC, euclidean clustering, and PCL while working with real LIDAR data. It was created by Udacity and the instructor Aaron Brown. The original repository can be found here https://github.com/udacity/SFND_Lidar_Obstacle_Detection.git. My contributions were to the cityBlock function within environment.cpp as well as most of the content in the other 3 files within the src/ folder.
 
 In order to set up your own environment you may follow the instructions below.
 
